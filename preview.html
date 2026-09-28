@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flight Schedule</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+    <style>
+         :root {
+            --ink: #0d1117;
+            --ink-soft: #3d4452;
+            --ink-muted: #8691a2;
+            --surface: #fff;
+            --surface-2: #f5f7fa;
+            --border: #e4e9f0;
+            --accent: #1a56db;
+            --accent-glow: rgba(26, 86, 219, .18);
+            --accent-dark: #1044b2;
+            --success: #0e9f6e;
+            --error: #e3342f;
+            --error-bg: #fff5f5;
+            --r-sm: 8px;
+            --r-md: 16px;
+            --r-lg: 24px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, .07), 0 24px 48px -8px rgba(0, 0, 0, .12);
+            --t: all .22s cubic-bezier(.4, 0, .2, 1);
+            --ff-d: 'DM Serif Display', Georgia, serif;
+            --ff-b: 'DM Sans', system-ui, sans-serif;
+        }
+        
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+        
+        body {
+            font-family: var(--ff-b);
+            color: var(--ink);
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            background: #f0f4ff;
+            overflow-x: hidden
+        }
+        
+        .bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden
+        }
+        
+        .bg-grid {
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(26, 86, 219, .05) 1px, transparent 1px), linear-gradient(90deg, rgba(26, 86, 219, .05) 1px, transparent 1px);
+            background-size: 40px 40px
+        }
+        
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: .45
+        }
+        
+        .orb1 {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, #c7d9ff, #e0eaff);
+            top: -180px;
+            right: -120px;
+            animation: f1 14s ease-in-out infinite
+        }
+        
+        .orb2 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, #b9f0e1, #d1faeb);
+            bottom: 40px;
+            left: -100px;
+            animation: f2 18s ease-in-out infinite
+        }
+        
+        .orb3 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, #fde8d8, #fde6e6);
+            bottom: 200px;
+            right: 100px;
+            animation: f1 20s ease-in-out infinite reverse
+        }
+        
+        @keyframes f1 {
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1)
+            }
+            50% {
+                transform: translate(30px, -30px) scale(1.05)
+            }
+        }
+        
+        @keyframes f2 {
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1)
+            }
+            50% {
+                transform: translate(-20px, 20px) scale(1.08)
+            }
+        }
+        
+        .wrap {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 40px 16px 80px
+        }
+        /* Header */
+        
+        .hdr {
+            width: 100%;
+            max-width: 560px;
+            margin-bottom: 28px;
+            text-align: center;
+            animation: su .55s ease both
+        }
+        
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(26, 86, 219, .1);
+            color: var(--accent);
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            padding: 5px 14px;
+            border-radius: 100px;
+            margin-bottom: 14px
+        }
+        
+        .badge-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: pulse 2s ease-in-out infinite
+        }
+        
+        @keyframes pulse {
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1)
+            }
+            50% {
+                opacity: .5;
+                transform: scale(.8)
+            }
+        }
+        
+        .hdr h1 {
+            font-family: var(--ff-d);
+            font-size: clamp(2rem, 5vw, 2.8rem);
+            color: var(--ink);
+            line-height: 1.15;
+            margin-bottom: 8px
+        }
+        
+        .hdr h1 em {
+            font-style: italic;
+            color: var(--accent)
+        }
+        
+        .hdr p {
+            font-size: 14px;
+            color: var(--ink-muted)
+        }
+        /* Card */
+        
+        .card {
+            width: 100%;
+            max-width: 560px;
+            background: var(--surface);
+            border-radius: var(--r-lg);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            animation: su .5s cubic-bezier(.34, 1.56, .64, 1) .15s both
+        }
+        
+        @keyframes su {
+            from {
+                opacity: 0;
+                transform: translateY(24px) scale(.98)
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1)
+            }
+        }
+        /* Sections */
+        
+        .sec {
+            padding: 20px 28px
+        }
+        
+        .sec-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px
+        }
+        
+        .sec-footer {
+            background: var(--surface-2);
+            padding: 24px 28px 28px
+        }
+        
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 0 28px
+        }
+        /* Labels */
+        
+        .lbl {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--ink-muted);
+            margin-bottom: 8px;
+            display: block
+        }
+        /* Trip toggle */
+        
+        .opts {
+            display: flex;
+            background: var(--surface-2);
+            border-radius: var(--r-sm);
+            padding: 3px;
+            border: 1px solid var(--border);
+            gap: 2px
+        }
+        
+        .opt {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            font-family: var(--ff-b);
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--ink-muted);
+            cursor: pointer;
+            transition: var(--t);
+            white-space: nowrap
+        }
+        
+        .opt.on {
+            background: var(--surface);
+            color: var(--ink);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .08)
+        }
+        
+        .opt:hover:not(.on) {
+            color: var(--ink)
+        }
+        /* Passengers */
+        
+        .pax {
+            display: flex;
+            align-items: center;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--r-sm);
+            overflow: hidden;
+            height: 42px
+        }
+        
+        .pax-btn {
+            width: 42px;
+            height: 42px;
+            flex-shrink: 0;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 18px;
+            color: var(--ink-soft);
+            transition: var(--t);
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+        
+        .pax-btn:hover:not(:disabled) {
+            background: var(--border);
+            color: var(--accent)
+        }
+        
+        .pax-btn:disabled {
+            opacity: .35;
+            cursor: not-allowed
+        }
+        
+        .pax-ct {
+            flex: 1;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--ink);
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px
+        }
+        /* Date input */
+        
+        .date-wrap {
+            position: relative
+        }
+        
+        .date-hdr {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px
+        }
+        
+        .date-lbl {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--ink-muted)
+        }
+        
+        .date-hint {
+            font-size: 11px;
+            color: var(--ink-muted);
+            font-style: italic
+        }
+        
+        .date-input-w {
+            position: relative;
+            display: flex;
+            align-items: center
+        }
+        
+        input[type=date] {
+            width: 100%;
+            padding: 12px 40px 12px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--r-sm);
+            font-family: var(--ff-b);
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--ink);
+            background: var(--surface);
+            cursor: pointer;
+            outline: none;
+            transition: var(--t);
+            appearance: none
+        }
+        
+        input[type=date]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow)
+        }
+        
+        input[type=date].err {
+            border-color: var(--error);
+            box-shadow: 0 0 0 3px rgba(227, 52, 47, .1)
+        }
+        
+        input[type=date]:disabled {
+            background: var(--surface-2);
+            color: var(--ink-muted);
+            cursor: not-allowed;
+            opacity: .7
+        }
+        
+        .cal-ico {
+            position: absolute;
+            right: 12px;
+            font-size: 16px;
+            pointer-events: none
+        }
+        
+        .date-err {
+            margin-top: 6px;
+            font-size: 12px;
+            color: var(--error);
+            display: flex;
+            align-items: center;
+            gap: 4px
+        }
+        
+        .date-err::before {
+            content: '●';
+            font-size: 7px
+        }
+        
+        .tag {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+            background: rgba(26, 86, 219, .07);
+            color: var(--accent);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 100px;
+            border: 1px solid rgba(26, 86, 219, .18);
+            animation: tin .25s ease
+        }
+        
+        .tag.show {
+            display: inline-flex
+        }
+        
+        .tag span {
+            font-weight: 400;
+            color: var(--ink-soft)
+        }
+        
+        @keyframes tin {
+            from {
+                opacity: 0;
+                transform: scale(.9) translateY(4px)
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0)
+            }
+        }
+        /* Error banner */
+        
+        .err-banner {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            background: var(--error-bg);
+            border: 1px solid rgba(227, 52, 47, .2);
+            color: var(--error);
+            font-size: 13px;
+            font-weight: 500;
+            padding: 10px 14px;
+            border-radius: var(--r-sm);
+            margin-bottom: 14px
+        }
+        
+        .err-banner.show {
+            display: flex;
+            animation: shake .35s ease
+        }
+        
+        @keyframes shake {
+            0%,
+            100% {
+                transform: translateX(0)
+            }
+            20% {
+                transform: translateX(-5px)
+            }
+            40% {
+                transform: translateX(5px)
+            }
+            60% {
+                transform: translateX(-3px)
+            }
+            80% {
+                transform: translateX(3px)
+            }
+        }
+        /* Continue btn */
+        
+        .btn {
+            width: 100%;
+            padding: 15px 24px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: var(--r-md);
+            font-family: var(--ff-b);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: var(--t);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: .02em
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, .15), transparent);
+            opacity: 0;
+            transition: opacity .2s
+        }
+        
+        .btn:hover {
+            background: var(--accent-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(26, 86, 219, .35)
+        }
+        
+        .btn:hover::before {
+            opacity: 1
+        }
+        
+        .btn:hover .arr {
+            transform: translateX(4px)
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: none
+        }
+        
+        .arr {
+            font-size: 18px;
+            transition: transform .2s ease
+        }
+        
+        .foot-hint {
+            text-align: center;
+            margin-top: 12px;
+            font-size: 12px;
+            color: var(--ink-muted)
+        }
+        
+        .foot-hint::before {
+            content: '🔒 '
+        }
+        /* Return row */
+        
+        #return-section {
+            display: none
+        }
+        
+        #return-section.show {
+            display: block
+        }
+        /* Summary */
+        
+        .summary {
+            display: none;
+            padding: 36px 28px;
+            text-align: center;
+            animation: su .45s cubic-bezier(.34, 1.56, .64, 1)
+        }
+        
+        .summary.show {
+            display: block
+        }
+        
+        .booking-form {}
+        
+        .s-ico {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #d4f5e9, #a7f3d0);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin: 0 auto 18px;
+            box-shadow: 0 8px 20px rgba(14, 159, 110, .2)
+        }
+        
+        .s-title {
+            font-family: var(--ff-d);
+            font-size: 1.6rem;
+            color: var(--ink);
+            margin-bottom: 6px
+        }
+        
+        .s-sub {
+            font-size: 13px;
+            color: var(--ink-muted);
+            margin-bottom: 28px
+        }
+        
+        .s-details {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--r-md);
+            padding: 20px;
+            margin-bottom: 24px;
+            text-align: left
+        }
+        
+        .s-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 9px 0
+        }
+        
+        .s-row:not(:last-child) {
+            border-bottom: 1px dashed var(--border)
+        }
+        
+        .s-key {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            color: var(--ink-muted)
+        }
+        
+        .s-val {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--ink)
+        }
+        
+        .back-btn {
+            width: 100%;
+            padding: 13px 24px;
+            background: transparent;
+            border: 1.5px solid var(--border);
+            border-radius: var(--r-md);
+            font-family: var(--ff-b);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--ink-soft);
+            cursor: pointer;
+            transition: var(--t)
+        }
+        
+        .back-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-glow)
+        }
+        
+        @media(max-width:600px) {
+            .sec {
+                padding: 18px 20px
+            }
+            .sec-row {
+                grid-template-columns: 1fr
+            }
+            .divider {
+                margin: 0 20px
+            }
+            .card {
+                border-radius: var(--r-md)
+            }
+            .hdr h1 {
+                font-size: 1.8rem
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg">
+        <div class="bg-grid"></div>
+        <div class="orb orb1"></div>
+        <div class="orb orb2"></div>
+        <div class="orb orb3"></div>
+    </div>
+    <div class="wrap">
+
+        <header class="hdr">
+            <div class="badge"><span class="badge-dot"></span>Booking Available</div>
+            <h1>Flight <em>Schedule</em></h1>
+            <p>Search, select, and fly — your journey starts here.</p>
+        </header>
+
+        <div class="card">
+            <div class="booking-form">
+                <!-- Row 1: Trip type + Passengers -->
+                <div class="sec sec-row">
+                    <div>
+                        <span class="lbl">Trip Type</span>
+                        <div class="opts">
+                            <button class="opt on" id="btn-round" onclick="setTrip('round')">⇄ Round-trip</button>
+                            <button class="opt" id="btn-oneway" onclick="setTrip('oneway')">→ One-way</button>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="lbl">Passengers</span>
+                        <div class="pax">
+                            <button class="pax-btn" id="pax-dec" onclick="changePax(-1)" disabled>−</button>
+                            <div class="pax-ct"><span>👤</span><span id="pax-count">1</span></div>
+                            <button class="pax-btn" id="pax-inc" onclick="changePax(1)">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Departure -->
+                <div class="sec">
+                    <div class="date-wrap">
+                        <div class="date-hdr">
+                            <label class="date-lbl" for="dep-input"><span>✈️</span> Departure Date</label>
+                        </div>
+                        <div class="date-input-w">
+                            <input type="date" id="dep-input" onchange="setDep(this.value)" aria-label="Departure Date" />
+                            <span class="cal-ico">📅</span>
+                        </div>
+                        <p class="date-err" id="dep-err" style="display:none"></p>
+                        <div class="tag" id="dep-tag">✓ <span id="dep-tag-text"></span></div>
+                    </div>
+                </div>
+
+                <!-- Return (conditionally shown) -->
+                <div id="return-section" class="sec show">
+                    <div class="date-wrap">
+                        <div class="date-hdr">
+                            <label class="date-lbl" for="ret-input"><span>🔁</span> Return Date</label>
+                            <span class="date-hint" id="ret-hint">Select a departure date first</span>
+                        </div>
+                        <div class="date-input-w">
+                            <input type="date" id="ret-input" disabled onchange="setRet(this.value)" aria-label="Return Date" />
+                            <span class="cal-ico">📅</span>
+                        </div>
+                        <p class="date-err" id="ret-err" style="display:none"></p>
+                        <div class="tag" id="ret-tag">✓ <span id="ret-tag-text"></span></div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="sec sec-footer">
+                    <div class="err-banner" id="err-banner">
+                        <span style="font-size:15px">⚠️</span>
+                        <span id="err-msg"></span>
+                    </div>
+                    <button class="btn" onclick="handleContinue()">
+          <span>Continue</span>
+          <span class="arr">→</span>
+        </button>
+                    <p class="foot-hint">No payment required at this step</p>
+                </div>
+            </div>
+
+            <!-- Summary (shown after submit) -->
+            <div class="summary" id="summary">
+                <div class="s-ico">✅</div>
+                <h2 class="s-title">Booking Confirmed!</h2>
+                <p class="s-sub">Your details have been logged. Check console for full data.</p>
+                <div class="s-details" id="s-details"></div>
+                <button class="back-btn" onclick="handleReset()">← Start Over</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const todayISO = new Date().toISOString().split('T')[0];
+        document.getElementById('dep-input').min = todayISO;
+
+        let tripType = 'round',
+            pax = 1,
+            depDate = '',
+            retDate = '';
+
+        function setTrip(t) {
+            tripType = t;
+            document.getElementById('btn-round').classList.toggle('on', t === 'round');
+            document.getElementById('btn-oneway').classList.toggle('on', t === 'oneway');
+            const rs = document.getElementById('return-section');
+            rs.classList.toggle('show', t === 'round');
+            if (t === 'oneway') {
+                retDate = '';
+                document.getElementById('ret-input').value = '';
+                updateRetTag();
+            }
+            clearErrors();
+        }
+
+        function changePax(d) {
+            pax = Math.max(1, Math.min(9, pax + d));
+            document.getElementById('pax-count').textContent = pax;
+            document.getElementById('pax-dec').disabled = pax <= 1;
+            document.getElementById('pax-inc').disabled = pax >= 9;
+        }
+
+        function fmtDate(iso) {
+            if (!iso) return '';
+            const [y, m, d] = iso.split('-').map(Number);
+            return new Date(y, m - 1, d).toLocaleDateString('en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        function setDep(v) {
+            depDate = v;
+            const ri = document.getElementById('ret-input');
+            ri.min = v;
+            if (retDate && retDate < v) {
+                retDate = '';
+                ri.value = '';
+                updateRetTag();
+            }
+            ri.disabled = !v;
+            document.getElementById('ret-hint').style.display = v ? 'none' : '';
+            updateDepTag();
+            clearErrors();
+        }
+
+        function setRet(v) {
+            retDate = v;
+            updateRetTag();
+            clearErrors();
+        }
+
+        function updateDepTag() {
+            const t = document.getElementById('dep-tag');
+            document.getElementById('dep-tag-text').textContent = fmtDate(depDate);
+            t.classList.toggle('show', !!depDate);
+        }
+
+        function updateRetTag() {
+            const t = document.getElementById('ret-tag');
+            document.getElementById('ret-tag-text').textContent = fmtDate(retDate);
+            t.classList.toggle('show', !!retDate);
+        }
+
+        function showErr(id, msg) {
+            const el = document.getElementById(id);
+            el.textContent = msg;
+            el.style.display = msg ? 'flex' : 'none';
+            const input = document.getElementById(id.replace('-err', '-input'));
+            if (input) {
+                msg ? input.classList.add('err') : input.classList.remove('err');
+            }
+        }
+
+        function clearErrors() {
+            showErr('dep-err', '');
+            showErr('ret-err', '');
+            const b = document.getElementById('err-banner');
+            b.classList.remove('show');
+        }
+
+        function showBanner(msg) {
+            const b = document.getElementById('err-banner');
+            document.getElementById('err-msg').textContent = msg;
+            b.classList.remove('show');
+            void b.offsetWidth;
+            b.classList.add('show');
+        }
+
+        function handleContinue() {
+            clearErrors();
+            let valid = true;
+            if (!depDate) {
+                showErr('dep-err', 'Please select a departure date.');
+                valid = false;
+            }
+            if (tripType === 'round' && !retDate) {
+                showErr('ret-err', 'Please select a return date for round trips.');
+                valid = false;
+            }
+            if (!valid) {
+                const msg = !depDate ? 'Please select a departure date.' : 'Please select a return date for round trips.';
+                showBanner(msg);
+                return;
+            }
+            const details = {
+                tripType,
+                passengers: pax,
+                departureDate: fmtDate(depDate),
+                returnDate: tripType === 'round' ? fmtDate(retDate) : 'N/A'
+            };
+            console.log('✈️ Flight Booking Details:', details);
+            buildSummary(details);
+            document.querySelector('.booking-form').style.display = 'none';
+            document.getElementById('summary').classList.add('show');
+        }
+
+        function buildSummary(d) {
+            const rows = [
+                ['Trip', d.tripType === 'round' ? '⇄ Round-trip' : '→ One-way'],
+                ['Passengers', `👤 ${d.passengers} passenger${d.passengers>1?'s':''}`],
+                ['Departure', `✈️ ${d.departureDate}`],
+                ...(d.tripType === 'round' ? [
+                    ['Return', `🔁 ${d.returnDate}`]
+                ] : [])
+            ];
+            document.getElementById('s-details').innerHTML = rows.map(([k, v]) =>
+                `<div class="s-row"><span class="s-key">${k}</span><span class="s-val">${v}</span></div>`
+            ).join('');
+        }
+
+        function handleReset() {
+            tripType = 'round';
+            pax = 1;
+            depDate = '';
+            retDate = '';
+            document.getElementById('dep-input').value = '';
+            document.getElementById('ret-input').value = '';
+            document.getElementById('ret-input').disabled = true;
+            document.getElementById('ret-hint').style.display = '';
+            document.getElementById('pax-count').textContent = '1';
+            document.getElementById('pax-dec').disabled = true;
+            document.getElementById('pax-inc').disabled = false;
+            document.getElementById('btn-round').classList.add('on');
+            document.getElementById('btn-oneway').classList.remove('on');
+            document.getElementById('return-section').classList.add('show');
+            clearErrors();
+            updateDepTag();
+            updateRetTag();
+            document.querySelector('.booking-form').style.display = '';
+            document.getElementById('summary').classList.remove('show');
+        }
+    </script>
+</body>
+
+</html>
